@@ -44,22 +44,58 @@ export default async (msg: Message) => {
     if (myCache.get(roomTopic) === GAME_PLAYING && room.owner()) {
         const mentionList = await msg.mentionList()
         const roomDashboard: any = myCache.get(ROOM_DASHBOARD)
-        const { cards } = roomDashboard
-        const uc = cards.filter(item => item.identity === '卧底').map(item => item.username).join('、')
-        const empty = cards.filter(item => item.identity === '白板').map(item => item.username).join('、')
+        const user: Contact = myCache.get(MY_BOT)
 
         for (const mention of mentionList) {
-            const result = await Undercover.vote(mention.id, roomDashboard)
-            if (result === 0) {
-                await room.say(`游戏结束，平民胜利，本次卧底是 ${uc} ${empty ? `本局白板是 ${empty}` : ''}`)
-                break
+            if (mention.id === user.id) {
+                await room.say('我不在游戏列表之中噢.')
+                continue
             }
-            if (result === 1) {
-                await room.say(`游戏结束，卧底胜利，本次卧底是 ${uc} ${empty ? `本局白板是 ${empty}` : ''}`)
-                break
+            Undercover.vote(mention.id, roomDashboard)
+            const result = await Undercover.checkGameOver(roomDashboard)
+            await notifyRoomMember(result);
+        }
+        myCache.set(ROOM_DASHBOARD, roomDashboard);
+    }
+
+    // 群员可以投房主
+    if (myCache.get(roomTopic) === GAME_PLAYING && !room.owner()) {
+        const mentionList = await msg.mentionList()
+        const roomDashboard: any = myCache.get(ROOM_DASHBOARD)
+
+        for (const mention of mentionList) {
+            if (mention.id === room.owner().id) {
+                Undercover.vote(mention.id, roomDashboard)
+                const result = await Undercover.checkGameOver(roomDashboard)
+                await notifyRoomMember(result);
+                break;
             }
         }
         myCache.set(ROOM_DASHBOARD, roomDashboard);
+    }
+
+    async function notifyRoomMember(result) {
+        const roomDashboard: any = myCache.get(ROOM_DASHBOARD)
+        const { cards } = roomDashboard
+
+        const uc = cards.filter(item => item.identity === '卧底').map(item => item.username).join('、')
+        const empty = cards.filter(item => item.identity === '白板').map(item => item.username).join('、')
+
+        if (roomDashboard.gameover) {
+           return
+        }
+
+        if (result === -1) {
+            return await room.say(`游戏未结束，请继续发言`)
+        }
+
+        if (result === 0) {
+            return await room.say(`游戏结束，平民胜利，本次卧底是 ${uc} ${empty ? `本局白板是 ${empty}` : ''}`)
+        }
+
+        if (result === 1) {
+            return await room.say(`游戏结束，卧底胜利，本次卧底是 ${uc} ${empty ? `本局白板是 ${empty}` : ''}`)
+        }
     }
 
     async function play (playerNum, undercoverNum, emptyNum) {
@@ -93,6 +129,6 @@ export default async (msg: Message) => {
 
         myCache.set(roomTopic, GAME_PLAYING)
         myCache.set(ROOM_DASHBOARD, roomDashboard)
-        await room.say('对局正式开始. 房主@人进行投票')
+        await room.say('对局正式开始. 房主@人进行投票 群里任意人员可投房主')
     }
 }

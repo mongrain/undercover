@@ -70,15 +70,14 @@ class Undercover {
         }
         card.out = true;
         if (card.identity == "卧底") {
-            existUc--
+            room.existUc = --existUc
         } else if (card.identity == "白板") {
-            existEmpty--
+            room.existEmpty = --existEmpty
         }
-        existPlayer--
+        room.existPlayer = --existPlayer
         if (gameover) {
             return
         }
-        return this.checkGameOver(room)
     }
 
     checkGameOver(room) {
