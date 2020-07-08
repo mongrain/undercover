@@ -17,11 +17,7 @@ export default async (msg: Message) => {
         const roomTopic = await room.topic()
         const text = msg.text()
 
-        if (INIT_UNDERCOVER_ROOM) {
-            await room.say('游戏初始化为 谁是卧底')
-        }
-
-        if (text === RESET_UNDERCOVER_ROOM) {
+        if (text === INIT_UNDERCOVER_ROOM || text === RESET_UNDERCOVER_ROOM) {
             await room.say('请输入配置， 如：4 2 1则代表 4个平民 2个卧底 1个白板\r\n如果不需要白板则填写4 2即可')
             myCache.set(roomTopic, GAME_CONFIGURATION)
             return
