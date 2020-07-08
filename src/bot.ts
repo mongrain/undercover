@@ -4,6 +4,7 @@ import { PuppetPadplus } from 'wechaty-puppet-padplus'
 import { token, name } from '../config/config'
 
 import onScan from './handler/on-scan'
+import onLogin from './handler/on-login'
 import onMessage from './handler/on-message'
 import onFriendship from './handler/on-friendship'
 import onRoomInvite from './handler/on-room-invite'
@@ -21,7 +22,7 @@ const bot = new Wechaty({
 
 bot
   .on('scan', onScan)
-  .on('login', (user: Contact) => console.log(`login success, user: ${user}`))
+  .on('login', onLogin)
   .on('friendship', onFriendship)
   .on('room-invite', onRoomInvite)
   .on('room-join', onRoomJoin)
