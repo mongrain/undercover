@@ -88,7 +88,7 @@ export default async (msg: Message) => {
             cards,
             existUc: undercoverNum,
             existEmpty: emptyNum,
-            existPlayer: playerNum
+            existPlayer: total
         }
 
         myCache.set(roomTopic, GAME_PLAYING)
